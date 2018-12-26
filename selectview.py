@@ -31,28 +31,21 @@ class ExtendedListBox(urwid.ListBox):
         self.select_callback(self.focus.base_widget.text)
         return key
 
-def handle_input(input):
-    if input == "enter": # Open link
-#        focus_widget, idx = content_container.get_focus()
-#        url = focus_widget.base_widget.text
-#        print(text)
-        pass
-    elif input in ('q', 'Q'): # Quit
-        raise urwid.ExitMainLoop()
-
 def run_command(command_string, parameter):
     p = subprocess.Popen(f"{command_string} '{parameter}'", stdout=subprocess.PIPE, shell=True)
     (output, err) = p.communicate()
     p_status = p.wait()
     return output
 
-command_string = 'cat'
-content_items = []
+# set preview program to first argument
+command_string = sys.argv[1]
 
+# read selectlist cotnent from stdin
+content_items = []
 for line in sys.stdin.readlines():
     content_items.append(line.strip())
-#sys.__stdin__.close()
-#reopen stdin to prevent urwid error
+
+# reopen stdin to prevent urwid error
 sys.__stdin__ = sys.stdin = open('/dev/tty', 'r')
 os.dup2(sys.stdin.fileno(), 0)
 
@@ -69,9 +62,12 @@ palette = [
 
 menu = urwid.Text([
     '\n',
-    ('menu', u' ENTER '), ('light gray', u" Open link "),
     ('menu', u' Q '), ('light gray', u" Quit"),
 ])
+
+def handle_input(input):
+    if input in ('q', 'Q'): # Quit
+        raise urwid.ExitMainLoop()
 
 listitems = list(map(lambda url: urwid.AttrMap(SelectableText(url), None, "reveal focus"), content_items))
 
